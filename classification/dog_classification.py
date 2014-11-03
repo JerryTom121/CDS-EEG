@@ -41,10 +41,10 @@ def get_features(data):
 
 def cross_validation(data, label, k=5):
     A = zip(data, label)
-    shuffled = random.shuffle(A)
+    random.shuffle(A)
     size = len(data)
     test_size = size / k
-    for i in xrange(0, size - test_size, test_size):
+    for i in xrange(0, size - test_size + 1, test_size):
         test = A[i:i + test_size]
         train = A[:i] + A[i + test_size:]
 
