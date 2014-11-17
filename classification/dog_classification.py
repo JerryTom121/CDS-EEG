@@ -37,15 +37,15 @@ def fit_pca(data):
 
     return pca
 
-def pca(data):
+def pca(data, pca_trained):
     feats = []
     for d in data:
         f = []
         for i in xrange(len(d)):
             if f==[]:
-                f = pca.transform(d[i])
+                f = pca_trained.transform(d[i])
             else:
-                f = f + pca.transform(d[i])
+                f = f + pca_trained.transform(d[i])
         feats.append(f.flatten())
 
     return feats
