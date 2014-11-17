@@ -25,7 +25,7 @@ def read_data(directory):
     return data, labels
 
 #FEATURE EXTRACTORS
-def pca(data):
+def fit_pca(data):
     print "PCA"
     pca = decomposition.PCA(n_components=0.5)
     X = []
@@ -35,6 +35,9 @@ def pca(data):
 
     pca.fit(X)
 
+    return pca
+
+def pca(data):
     feats = []
     for d in data:
         f = []
@@ -87,8 +90,8 @@ if __name__=="__main__":
     #data, labels = read_data("../../copy")
 
     #EXTRACT FEATURES
-    feats = fft(data)
-    #feats = flatten(data)
+    #feats = fft(data)
+    feats = flatten(data)
 
     train_data = []
     train_label = []
