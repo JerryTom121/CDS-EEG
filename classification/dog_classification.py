@@ -1,5 +1,4 @@
-from os import listdir
-from os.path import isfile, join
+import os
 from scipy.io import loadmat
 import numpy as np
 from sklearn import svm
@@ -7,26 +6,36 @@ import random
 
 def read_data(directory):
     print "Reading in data"
-    onlyfiles = [ f for f in listdir(directory) if isfile(join(directory,f)) ]
     data = []
     labels = []
-    for f in onlyfiles:
-        if f.endswith(".mat"):
-            mat = loadmat(join(directory,f))
-            keys = mat.keys()
-            name = keys[0]
-            struct = mat.get(name)[0][0][0]
-            if type(struct) == str:
-                continue
-            s = name.split('-')
-            data_type = s[0]
-            data.append(struct)
-            labels.append(data_type)
+    for root, dirs, files in os.walk(directory):
+        for f in files:
+            if f.endswith(".mat"):
+                mat = loadmat(os.path.join(directory,f))
+                keys = mat.keys()
+                name = keys[0]
+                struct = mat.get(name)[0][0][0]
+                if type(struct) == str:
+                    continue
+                s = name.split('_')
+                l = s[0]
+                data.append(struct)
+                labels.append(l)
 
     return data, labels
 
-def get_features(data):
-    print "Creating features"
+#FEATURE EXTRACTORS
+def flatten(data):
+    print "Flatten"
+    feats = []
+    
+    for d in data:
+        feats.append(d.flatten())
+
+    return feats
+
+def fft(data):
+    print "FFT"
     feats = []
     
     for d in data:
@@ -34,7 +43,7 @@ def get_features(data):
         for i in xrange(len(d)):
             fft = np.fft.rfft(d[i])
             for val in fft:
-                f.append(val * np.conjugate(val))
+                f.append((val * np.conjugate(val)).astype(np.int64))
         feats.append(f)
 
     return feats
@@ -51,8 +60,12 @@ def cross_validation(data, label, k=5):
         yield train, test
 
 if __name__=="__main__":
+    #READ IN DATA
     data, labels = read_data("../../copy")
-    feats = get_features(data)
+
+    #EXTRACT FEATURES
+    #feats = fft(data)
+    feats = flatten(data)
 
     train_data = []
     train_label = []
@@ -66,7 +79,6 @@ if __name__=="__main__":
             train_label.append(l)
 
     #TRAIN CLASSIFIER
-
     accuracy = 0.0
     k = 5
     #train 1 vs. 1 SVM
@@ -81,7 +93,8 @@ if __name__=="__main__":
             if prediction == l:
                 acc += 1.0
 
-        acc / len(test)
+        acc = acc / len(test)
+        print acc
         accuracy += acc
 
     accuracy = accuracy / k
