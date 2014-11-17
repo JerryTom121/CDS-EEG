@@ -1,7 +1,7 @@
 import os
 from scipy.io import loadmat
 import numpy as np
-from sklearn import svm
+from sklearn import svm, decomposition
 import random
 
 def read_data(directory):
@@ -25,6 +25,28 @@ def read_data(directory):
     return data, labels
 
 #FEATURE EXTRACTORS
+def pca(data):
+    print "PCA"
+    pca = decomposition.PCA(n_components=0.5)
+    X = []
+    for d in data:
+        for i in xrange(len(d)):
+            X.append(d[i])
+
+    pca.fit(X)
+
+    feats = []
+    for d in data:
+        f = []
+        for i in xrange(len(d)):
+            if f==[]:
+                f = pca.transform(d[i])
+            else:
+                f = f + pca.transform(d[i])
+        feats.append(f.flatten())
+
+    return feats
+    
 def flatten(data):
     print "Flatten"
     feats = []
@@ -61,11 +83,12 @@ def cross_validation(data, label, k=5):
 
 if __name__=="__main__":
     #READ IN DATA
-    data, labels = read_data("../../copy")
+    data, labels = read_data("../../Dog_1")
+    #data, labels = read_data("../../copy")
 
     #EXTRACT FEATURES
-    #feats = fft(data)
-    feats = flatten(data)
+    feats = fft(data)
+    #feats = flatten(data)
 
     train_data = []
     train_label = []
