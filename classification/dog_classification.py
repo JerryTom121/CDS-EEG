@@ -1,7 +1,7 @@
 import os
 from scipy.io import loadmat
 import numpy as np
-from sklearn import svm, decomposition
+from sklearn import svm, decomposition, neighbors
 import random
 import argparse
 
@@ -9,7 +9,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train and test Kaggle EEG dog data")
     parser.add_argument('--path', dest="path", type=str, help="Path to tagged data. REQUIRED", required=True)
     parser.add_argument('--features', dest="features", type=str, help="Type of features to use", choices=["raw", "fft", "cpa"], default="raw")
-    parser.add_argument('--k', dest="k", type=int, default=5)
+    parser.add_argument('--classifier', dest="classifier", type=str, help="Type of classifier to use", choices=["svm"], default="svm")
+    parser.add_argument('--k', dest="k", type=int, default=5, help="k for cross validation")
+    parser.add_argument('--pca', dest="pca", action='store_true', help="Apply pca")
 
     args = parser.parse_args()
     return args
@@ -129,11 +131,21 @@ if __name__=="__main__":
     #train 1 vs. 1 SVM
     print "Training"
     for train, test in cross_validation(train_data, train_label, k):
-        clf = svm.SVC()
+        if args.classifier == "svm":
+            clf = svm.SVC()
+
         f_train, l_train = zip(*train)
+        f_test, l_test = zip(*test)
+
+        #Apply PCA
+        if args.pca:
+            pca_trained = fit_pca(f_train)
+            f_train = pca(f_train, pca_trained)
+            f_test = pca(f_test, pca_trained)
+
         clf.fit(f_train, l_train)
         acc = 0.0
-        for f, l in test:
+        for f, l in zip(f_test, l_test):
             prediction = clf.predict(f)
             if prediction == l:
                 acc += 1.0
