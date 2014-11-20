@@ -3,6 +3,16 @@ from scipy.io import loadmat
 import numpy as np
 from sklearn import svm, decomposition
 import random
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train and test Kaggle EEG dog data")
+    parser.add_argument('--path', dest="path", type=str, default=None, help="Path to tagged data. REQUIRED", required=True)
+    parser.add_argument('--features', dest="features", type=str, help="Type of features to use", choices=["raw", "fft", "cpa"], default="raw")
+    parser.add_argument('--k', dest="k", type=int, default=5)
+
+    args = parser.parse_args()
+    return args
 
 def read_data(directory):
     print "Reading in data"
@@ -73,6 +83,11 @@ def fft(data):
 
     return feats
 
+def cpa(data):
+    feats = []
+
+    return feats
+
 def cross_validation(data, label, k=5):
     A = zip(data, label)
     random.shuffle(A)
@@ -85,13 +100,17 @@ def cross_validation(data, label, k=5):
         yield train, test
 
 if __name__=="__main__":
+    args = parse_args()
     #READ IN DATA
-    data, labels = read_data("../../Dog_1")
-    #data, labels = read_data("../../copy")
+    data, labels = read_data(args.path)
 
     #EXTRACT FEATURES
-    #feats = fft(data)
-    feats = flatten(data)
+    if args.features == "raw":
+        feats = flatten(data)
+    elif args.features == "fft":
+        feats = fft(data)
+    elif args.features == "cpa":
+        feats = cpa(data)
 
     train_data = []
     train_label = []
@@ -106,7 +125,7 @@ if __name__=="__main__":
 
     #TRAIN CLASSIFIER
     accuracy = 0.0
-    k = 5
+    k = args.k
     #train 1 vs. 1 SVM
     print "Training"
     for train, test in cross_validation(train_data, train_label, k):
