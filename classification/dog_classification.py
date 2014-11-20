@@ -7,7 +7,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train and test Kaggle EEG dog data")
-    parser.add_argument('--path', dest="path", type=str, default=None, help="Path to tagged data. REQUIRED", required=True)
+    parser.add_argument('--path', dest="path", type=str, help="Path to tagged data. REQUIRED", required=True)
     parser.add_argument('--features', dest="features", type=str, help="Type of features to use", choices=["raw", "fft", "cpa"], default="raw")
     parser.add_argument('--k', dest="k", type=int, default=5)
 
